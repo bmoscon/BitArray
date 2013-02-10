@@ -56,15 +56,6 @@
 #include <cmath>
 #include <cassert>
 
-// Max size allowed by mask is 32 bits
-static uint64_t mask_table[] = {0x1,        0x3,        0x7,        0xF,   
-				0x1F,       0x3F,       0x7F,       0xFF, 
-				0x1FF,      0x3FF,      0x7FF,      0xFFF, 
-				0x1FFF,     0x3FFF,     0x7FFF,     0xFFFF,
-				0x1FFFF,    0x3FFFF,    0x7FFFF,    0xFFFFF, 
-				0x1FFFFF,   0x3FFFFF,   0x7FFFFF,   0xFFFFFF,
-				0x1FFFFFF,  0x3FFFFFF,  0x7FFFFFF,  0xFFFFFFF,
-				0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF, 0xFFFFFFFF};
 
 template <class T = uint64_t>
 class BitArray {
@@ -74,15 +65,16 @@ public:
   BitArray(const T &elements, const T &bits_per_element = 1) :
     array_(ceil(elements * bits_per_element / (sizeof(T) * 8.0)), 0),
     elem_bits_(bits_per_element),
-    elem_mask_(mask_table[bits_per_element-1]) { 
-    
-    assert(bits_per_element < 33 && bits_per_element); 
+    elem_mask_(pow(2, bits_per_element) - 1),
+    bitcount_(sizeof(T) << 3)
+  { 
+    assert(bits_per_element); 
   }
 
   T at(const T &index) const {
 
     T idx = index_translate(index);
-    T mask = elem_mask_ << (bitcount() - idx);
+    T mask = elem_mask_ << (bitcount_ - idx);
 
     return (lookup(idx, mask));
   }
@@ -91,19 +83,19 @@ public:
     T idx = index_translate(index);
     T mask = elem_mask_;
     
-    mask <<= (bitcount() - idx);
+    mask <<= (bitcount_ - idx);
 
     T value = lookup(idx, mask);
     
     if (value == elem_mask_) {
       return;
     } else {
-      array_[idx >> (log2(bitcount()))] &= ~mask;
+      array_[idx >> (log2(bitcount_))] &= ~mask;
       
       ++value;
-      value <<= (bitcount() - idx);
+      value <<= (bitcount_ - idx);
 
-      array_[idx >> (log2(bitcount()))] |= value;
+      array_[idx >> (log2(bitcount_))] |= value;
     }
   }
 
@@ -111,19 +103,19 @@ public:
     T idx = index_translate(index);
     T mask = elem_mask_;
     
-    mask <<= (bitcount() - idx);
+    mask <<= (bitcount_ - idx);
 
     T value = lookup(idx, mask);
 
     if (value == 0) {
       return;
     } else {
-      array_[idx >> (log2(bitcount()))] &= ~mask;
+      array_[idx >> (log2(bitcount_))] &= ~mask;
 
       --value;
       value <<= ((sizeof(T) << 3) - idx);
 
-      array_[idx >> (log2(bitcount()))] |= value;
+      array_[idx >> (log2(bitcount_))] |= value;
     }
   }
 
@@ -141,11 +133,7 @@ protected:
   }
 
   inline T lookup(const T &index, T &mask) const {
-    return ((array_[index >> log2(bitcount())] & mask) >> ((sizeof(T) << 3) - index));
-  }
-
-  inline T bitcount() const {
-    return (sizeof(T) << 3);
+    return ((array_[index >> log2(bitcount_)] & mask) >> ((sizeof(T) << 3) - index));
   }
 
   inline uint32_t log2(const uint32_t x) const {
@@ -163,6 +151,7 @@ protected:
   std::vector<T> array_;
   T elem_bits_;
   T elem_mask_;
+  T bitcount_;
 };
 
 
