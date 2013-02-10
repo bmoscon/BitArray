@@ -56,10 +56,15 @@
 #include <cmath>
 #include <cassert>
 
-static uint64_t mask_table[] = {0x1,    0x3,    0x7,    0xF,   
-				0x1F,   0x3F,   0x7F,   0xFF, 
-				0x1FF,  0x3FF,  0x7FF,  0xFFF, 
-				0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF};
+// Max size allowed by mask is 32 bits
+static uint64_t mask_table[] = {0x1,        0x3,        0x7,        0xF,   
+				0x1F,       0x3F,       0x7F,       0xFF, 
+				0x1FF,      0x3FF,      0x7FF,      0xFFF, 
+				0x1FFF,     0x3FFF,     0x7FFF,     0xFFFF,
+				0x1FFFF,    0x3FFFF,    0x7FFFF,    0xFFFFF, 
+				0x1FFFFF,   0x3FFFFF,   0x7FFFFF,   0xFFFFFF,
+				0x1FFFFFF,  0x3FFFFFF,  0x7FFFFFF,  0xFFFFFFF,
+				0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF, 0xFFFFFFFF};
 
 template <class T = uint64_t>
 class BitArray {
@@ -71,7 +76,7 @@ public:
     elem_bits_(bits_per_element),
     elem_mask_(mask_table[bits_per_element-1]) { 
     
-    assert(bits_per_element < 17 && bits_per_element); 
+    assert(bits_per_element < 33 && bits_per_element); 
   }
 
   T at(const T &index) const {
