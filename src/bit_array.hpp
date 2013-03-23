@@ -22,8 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright notice, 
  *    this list of conditions and the following disclaimer in the documentation 
  *    and/or other materials provided with the distribution, and in the same 
- *    place and form as other copyright,
- *    license and disclaimer information.
+ *    place and form as other copyright, license and disclaimer information.
  *
  * 3. The end-user documentation included with the redistribution, if any, must 
  *    include the following acknowledgment: "This product includes software 
@@ -66,13 +65,14 @@ public:
     array_(ceil(elements * bits_per_element / (sizeof(T) * 8.0)), 0),
     elem_bits_(bits_per_element),
     elem_mask_(pow(2, bits_per_element) - 1),
-    bitcount_(sizeof(T) << 3)
+    bitcount_(sizeof(T) << 3),
+    len_(elements)
   { 
-    assert(bits_per_element); 
+    assert(bits_per_element);
+    assert(sizeof(T) * 8 % bits_per_element == 0);
   }
 
   T at(const T &index) const {
-
     T idx = index_translate(index);
     T mask = elem_mask_ << (bitcount_ - idx);
 
@@ -113,14 +113,33 @@ public:
       array_[idx >> (log2(bitcount_))] &= ~mask;
 
       --value;
-      value <<= ((sizeof(T) << 3) - idx);
+      value <<= (bitcount_ - idx);
 
       array_[idx >> (log2(bitcount_))] |= value;
     }
   }
 
+  void set(const T &index, T value) {
+    if (value > elem_mask_) {
+      return;
+    }
+    
+    T idx = index_translate(index);
+    T mask = elem_mask_;
+    
+    mask <<= (bitcount_ - idx);
+    array_[idx >> (log2(bitcount_))] &= ~mask;
+
+    value <<= (bitcount_ - idx);
+    array_[idx >> (log2(bitcount_))] |= value;
+  }
+
+  T size() const {
+    return (len_);
+  }
+
   void dump() {
-    for (int i = 0; i < array_.size(); ++i) {
+    for (T i = 0; i < array_.size(); ++i) {
       std::cout << array_[i] << std::endl;
     }
   }
@@ -129,11 +148,13 @@ public:
 protected:
 
   inline T index_translate(const T &index) const {
-    return ((index + 1) * elem_bits_);
+    static uint32_t index_shift = log2(elem_bits_); 
+    return ((index) << index_shift);
   }
 
   inline T lookup(const T &index, T &mask) const {
-    return ((array_[index >> log2(bitcount_)] & mask) >> ((sizeof(T) << 3) - index));
+    static uint32_t index_shift = log2(bitcount_);
+    return ((array_[index >> index_shift] & mask) >> (bitcount_ - index));
   }
 
   inline uint32_t log2(const uint32_t x) const {
@@ -147,11 +168,16 @@ protected:
     return (ret);
   }
   
-  
+  // Array that holds the underlying datatype elements
   std::vector<T> array_;
-  T elem_bits_;
+  // number of bits per element
+  T elem_bits_; 
+  // mask to select each element
   T elem_mask_;
+  // # of bits in the underlying datatype
   T bitcount_;
+  // user defined len
+  T len_;
 };
 
 

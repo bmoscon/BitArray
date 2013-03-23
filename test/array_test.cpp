@@ -48,38 +48,99 @@
  
 
 #include <iostream>
+#include <cassert>
+#include <cstdlib>
+#include <ctime>
+#include <cmath>
 
 #include "../src/bit_array.hpp"
 
+#define SIZE 1000
+#define BITS 8
+#define RANDOM_RUN 10
 
 int main () {
+  BitArray<uint64_t> array = BitArray<uint64_t>(SIZE, BITS);
+
+  std::cout << "Verifying array is initalized correctly..." << std::endl;
+  // verify each element is zeroed
+  for (uint64_t i = 0; i < array.size(); ++i) {
+    assert(array.at(i) == 0);
+  }
+
+  std::cout << "Verifying bounds are enforced..." << std::endl;
+  for (uint64_t i = 0; i < array.size(); ++i) {
+    uint64_t max_size = pow(2, BITS);
+
+    //check first that we are still 0
+    assert(array.at(i) == 0);
+    array.set(i, max_size);
+    assert(array.at(i) == 0);
+    array.set(i, max_size-1);
+    assert(array.at(i) == max_size-1);
+    array.inc(i);
+  }
+
+  // make sure each element in array is at max
+  for (uint64_t i = 0; i < array.size(); ++i) {
+    uint64_t max_size = pow(2, BITS);
+    assert(array.at(i) == max_size-1);
+  }
+
+  // re-zero array
+  for (uint64_t i = 0; i < array.size(); ++i) {
+    array.set(i, 0);
+  }
+
+  // verify each element is zeroed
+  for (uint64_t i = 0; i < array.size(); ++i) {
+    assert(array.at(i) == 0);
+  }
+
+  std::cout << "Pattern test..." << std::endl;
+  // set every other element to 1, check that pattern is correct
+  for (uint64_t i = 0; i < array.size(); i += 2) {
+    array.inc(i);
+  }
+
+  for (uint64_t i = 0; i < array.size(); i += 2) {
+    assert(array.at(i) == 1);
+  }
   
-  BitArray<uint32_t> array = BitArray<uint32_t>(64, 4);
+  for (uint64_t i = 1; i < array.size(); i += 2) {
+    assert(array.at(i) == 0);
+  }
 
-  std::cout << array.at(0) << std::endl;
-  std::cout << array.at(15) << std::endl;
-  std::cout << array.at(31) << std::endl;
-  std::cout << array.at(47) << std::endl;
-  std::cout << array.at(63) << std::endl;
-
-  array.inc(0);
-
-  std::cout << array.at(0) << std::endl;
-  array.inc(0);
-  array.inc(0);
-  array.inc(0);
-  std::cout << array.at(0) << std::endl;
-
-  array.dec(0);
-  std::cout << array.at(0) << std::endl;
   
-  array.inc(63);
-  array.inc(63);
-  array.inc(63);
-  array.dec(63);
-  std::cout << array.at(63) << std::endl;
+  // re-zero array
+  for (uint64_t i = 0; i < array.size(); ++i) {
+    array.set(i, 0);
+  }
+  
+  // verify each element is zeroed
+  for (uint64_t i = 0; i < array.size(); ++i) {
+    assert(array.at(i) == 0);
+  }
+
+  std::vector<uint64_t> random_numbers(array.size());
+  srand(time(NULL));
 
 
+  for (uint64_t j = 0; j < RANDOM_RUN; ++j) {
+
+    std::cout << "Filling array with random numbers and verifying..." << std::endl;
+    
+    for (uint64_t i = 0; i < random_numbers.size(); ++i) {
+      random_numbers[i] = rand() % BITS;
+      array.set(i, random_numbers[i]);
+    }
+    
+    for (uint64_t i = 0; i < array.size(); ++i) {
+      assert(array.at(i) == random_numbers[i]);
+    } 
+  }
+
+  std::cout << std::endl << "-------- PASS --------" << std::endl;  
 
   return 0;
 }
