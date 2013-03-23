@@ -70,6 +70,7 @@ public:
   { 
     assert(bits_per_element);
     assert(sizeof(T) * 8 % bits_per_element == 0);
+    index_shift_ = log2(bitcount_);
   }
 
   T at(const T &index) const {
@@ -80,7 +81,6 @@ public:
   }
 
   void inc(const T &index) {
-    static uint32_t index_shift = log2(bitcount_);
     T idx = index_translate(index);
     T mask = elem_mask_;
     
@@ -91,17 +91,16 @@ public:
     if (value == elem_mask_) {
       return;
     } else {
-      array_[idx >> index_shift] &= ~mask;
+      array_[idx >> index_shift_] &= ~mask;
       
       ++value;
       value <<= (bitcount_ - idx);
 
-      array_[idx >> index_shift] |= value;
+      array_[idx >> index_shift_] |= value;
     }
   }
 
   void dec(const T &index) {
-    static uint32_t index_shift = log2(bitcount_);
     T idx = index_translate(index);
     T mask = elem_mask_;
     
@@ -112,18 +111,16 @@ public:
     if (value == 0) {
       return;
     } else {
-      array_[idx >> index_shift] &= ~mask;
+      array_[idx >> index_shift_] &= ~mask;
 
       --value;
       value <<= (bitcount_ - idx);
 
-      array_[idx >> index_shift] |= value;
+      array_[idx >> index_shift_] |= value;
     }
   }
 
   void set(const T &index, T value) {
-    static uint32_t index_shift = log2(bitcount_);
-
     if (value > elem_mask_) {
       return;
     }
@@ -132,10 +129,10 @@ public:
     T mask = elem_mask_;
     
     mask <<= (bitcount_ - idx);
-    array_[idx >> index_shift] &= ~mask;
+    array_[idx >> index_shift_] &= ~mask;
 
     value <<= (bitcount_ - idx);
-    array_[idx >> index_shift] |= value;
+    array_[idx >> index_shift_] |= value;
   }
 
   T size() const {
@@ -151,14 +148,12 @@ public:
 
 protected:
 
-  inline T index_translate(const T &index) const {
-    static uint32_t index_shift = log2(elem_bits_); 
-    return ((index) << index_shift);
+  inline T index_translate(const T &index) const { 
+    return (index << log2(elem_bits_));
   }
 
   inline T lookup(const T &index, T &mask) const {
-    static uint32_t index_shift = log2(bitcount_);
-    return ((array_[index >> index_shift] & mask) >> (bitcount_ - index));
+    return ((array_[index >> index_shift_] & mask) >> (bitcount_ - index));
   }
 
   inline uint32_t log2(const uint32_t x) const {
@@ -180,6 +175,8 @@ protected:
   T elem_mask_;
   // # of bits in the underlying datatype
   T bitcount_;
+  // log2 of bitcount, used in shifting the index
+  uint32_t index_shift_;
   // user defined len
   T len_;
 };
