@@ -80,6 +80,7 @@ public:
   }
 
   void inc(const T &index) {
+    static uint32_t index_shift = log2(bitcount_);
     T idx = index_translate(index);
     T mask = elem_mask_;
     
@@ -90,16 +91,17 @@ public:
     if (value == elem_mask_) {
       return;
     } else {
-      array_[idx >> (log2(bitcount_))] &= ~mask;
+      array_[idx >> index_shift] &= ~mask;
       
       ++value;
       value <<= (bitcount_ - idx);
 
-      array_[idx >> (log2(bitcount_))] |= value;
+      array_[idx >> index_shift] |= value;
     }
   }
 
   void dec(const T &index) {
+    static uint32_t index_shift = log2(bitcount_);
     T idx = index_translate(index);
     T mask = elem_mask_;
     
@@ -110,16 +112,18 @@ public:
     if (value == 0) {
       return;
     } else {
-      array_[idx >> (log2(bitcount_))] &= ~mask;
+      array_[idx >> index_shift] &= ~mask;
 
       --value;
       value <<= (bitcount_ - idx);
 
-      array_[idx >> (log2(bitcount_))] |= value;
+      array_[idx >> index_shift] |= value;
     }
   }
 
   void set(const T &index, T value) {
+    static uint32_t index_shift = log2(bitcount_);
+
     if (value > elem_mask_) {
       return;
     }
@@ -128,10 +132,10 @@ public:
     T mask = elem_mask_;
     
     mask <<= (bitcount_ - idx);
-    array_[idx >> (log2(bitcount_))] &= ~mask;
+    array_[idx >> index_shift] &= ~mask;
 
     value <<= (bitcount_ - idx);
-    array_[idx >> (log2(bitcount_))] |= value;
+    array_[idx >> index_shift] |= value;
   }
 
   T size() const {
