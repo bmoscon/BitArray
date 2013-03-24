@@ -68,7 +68,7 @@ public:
     bitcount_(sizeof(T) << 3),
     len_(elements)
   { 
-    assert(bits_per_element);
+    assert(bits_per_element > 0 && bits_per_element < 64);
     assert(sizeof(T) * 8 % bits_per_element == 0);
     index_shift_ = log2(bitcount_);
   }
