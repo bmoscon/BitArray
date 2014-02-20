@@ -1,3 +1,13 @@
-A bit array container with two versions. One is written in C++ and the other in Python
+Multi language Bit Array Library
+
+The C++ version is in src/cpp/
+the C++ test code is in test/
+
+the Python version and its test code is in src/python/
+
+
+The C++ versions allows each element in the bit array to be composed of more than one bit. Really its more of a bitfield array. 
+
+The Python implementation is currently much more simplistic and allows each element to be of size 1 bit. 
 
 
