@@ -5,7 +5,7 @@
  * Bit Array Test Program
  *
  *
- * Copyright (C) 2012-2013  Bryant Moscon - bmoscon@gmail.com
+ * Copyright (C) 2012-2014  Bryant Moscon - bmoscon@gmail.com
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to 
@@ -53,7 +53,7 @@
 #include <ctime>
 #include <cmath>
 
-#include "../src/bit_array.hpp"
+#include "../src/cpp/bit_array.hpp"
 
 #define RANDOM_RUN 10
 

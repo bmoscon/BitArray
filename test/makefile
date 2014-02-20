@@ -6,7 +6,7 @@
 array_test: array_test.o
 	g++ -g -Wall -o array_test array_test.o
 
-array_test.o: array_test.cpp ../src/bit_array.hpp
+array_test.o: array_test.cpp ../src/cpp/bit_array.hpp
 	g++ -g -Wall -c array_test.cpp
 
 clean:
