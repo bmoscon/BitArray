@@ -53,7 +53,7 @@
 #include <ctime>
 #include <cmath>
 
-#include "../src/cpp/bit_array.hpp"
+#include "bit_array.hpp"
 
 #define RANDOM_RUN 10
 
